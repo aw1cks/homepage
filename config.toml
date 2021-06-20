@@ -17,6 +17,10 @@ info = "DevOps · Linux · Automation"
 
 avatarURL = "images/12629429.png"
 
+favicon_32 = "favicon_32x32.png"
+favicon_16 = "favicon-16x16.png"
+touchIcon = "apple-touch-icon.png"
+
 dateFormat = "2006-01-02"
 
 hideFooter = true
