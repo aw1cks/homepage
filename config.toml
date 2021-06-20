@@ -40,25 +40,6 @@ customSCSS = []
 # Custom JS
 customJS = []
 
-# If you want to implement a Content-Security-Policy, add this section
-[params.csp]
-childsrc = ["'self'"]
-fontsrc = ["'self'", "https://fonts.gstatic.com", "https://cdn.jsdelivr.net/"]
-formaction = ["'self'"]
-framesrc = ["'self'"]
-imgsrc = ["'self'"]
-objectsrc = ["'none'"]
-stylesrc = [
-  "'self'",
-  "'unsafe-inline'",
-  "https://fonts.googleapis.com/",
-  "https://cdn.jsdelivr.net/"
-]
-scriptsrc = ["'self'", "'unsafe-inline'", "https://www.google-analytics.com"]
-prefetchsrc = ["'self'"]
-# connect-src directive – defines valid targets for to XMLHttpRequest (AJAX), WebSockets or EventSource
-connectsrc = ["'self'", "https://www.google-analytics.com"]
-
 [taxonomies]
 category = "categories"
 series = "series"
