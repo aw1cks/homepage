@@ -30,7 +30,7 @@ In a lot of cases where you're using Packer, you'll already have the luxury of a
 ### Preparing the environment
 
 Just like doing it all by hand, we're booting into an Arch Linux live environment, where we are dropped into a shell. Except we want to run all the commands automatically. As such we need to setup the SSH communicator that Packer will be expecting. Luckily, the QEMU builder supports the `boot_command` directive, which allows us to enter a string which will then get typed on the keyboard.
-```
+```hcl
 boot_command = [
   "<enter><wait20s><enter>",
   "/usr/bin/curl -O http://{{ .HTTPIP }}:{{ .HTTPPort }}/prepare.sh",
@@ -46,15 +46,15 @@ boot_command = [
 ]
 ```
 #### Dissecting the boot command
-```
+```hcl
 "<enter><wait20s><enter>",
 ```
 The values inside angle brackets are interpreted by Packer as escape sequences. At the beginning we are hitting enter to pass the bootloader screen, waiting for the live boot to finish booting for 20 seconds, then hitting enter again to make the auto-login worked fine and we have a clean shell ready for our commands.
-```
+```hcl
 "/usr/bin/curl -O http://{{ .HTTPIP }}:{{ .HTTPPort }}/prepare.sh",
 ```
 Packer will handily serve a directory via its inbuilt HTTP server, if desired. Anything inside double curly braces is a template variable, and will be populated with the actual value by Packer. As such, I can place a simple script in my HTTP directory to configure SSH:
-```
+```shell
 #!/bin/sh
 
 set -e
@@ -64,7 +64,7 @@ echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config
 systemctl restart sshd
 ```
 And rinse and repeat for any other files I may need in my bootstrapping environment.
-```
+```hcl
  "/bin/sh ./prepare.sh",
  "<enter>"
  ```
@@ -74,7 +74,7 @@ And rinse and repeat for any other files I may need in my bootstrapping environm
 
 Packer has some neat provisioning plugins we can use, now that we have a channel of communication to the guest, such as the Ansible provisioner.
 For our use case though, the shell provisioner should be sufficient. Note that it will copy the file onto the guest for you, no manual steps required.
-```
+```hcl
 provisioner "shell" {
   script = "packer/bootstrap_liveboot.sh"
 }
@@ -87,7 +87,7 @@ From this point onwards, we just want to configure an Arch Linux system the way 
 In a normal Arch Linux install, once you've installed & configured the base system, you would run `arch-chroot` which mounts the relevant bind mounts & chroots into the new system on your mount point. Except this doesn't work for us, since it won't allow us to run a script non-interactively. As such, we use a feature of systemd called [systemd-nspawn](https://www.freedesktop.org/software/systemd/man/systemd-nspawn.html) which is somewhat analagous to Docker, but using our filesystem on the disk as our 'image'.
 
 First off, we need to copy any files needed _inside_ the new root:
-```
+```shell
 for FILE in inst.sh postinst.sh
 do
   cp "/root/${FILE}" /mnt
@@ -95,7 +95,7 @@ do
 done
 ```
 Now we can fire off systemd-nspawn, with our 'entrypoint' being a script of our choosing which will be non-interactively executed inside our container environment, passing any relevant arguments you may want:
-```
+```shell
 systemd-nspawn \
   -D /mnt \
   /inst.sh \
